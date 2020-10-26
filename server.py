@@ -1,6 +1,10 @@
 import socket
 import threading
 import json
+from cryptography import fernet
+from encryption import Encryption
+from serverConnection import serverConnection
+from room import Room
 
 
 class Server:
@@ -10,33 +14,7 @@ class Server:
         self.listenInt = listenInt
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connectedClients = {}
-
-    def newClient(self, conn, addr):
-        while True:
-            msg = conn.recv(1024).decode("utf-8")
-
-            if len(msg) == 0:
-                break
-
-            if len(msg) > 0:
-                try:
-                    msg = json.loads(msg)
-                    print(f'{addr}: {str(msg)}')
-
-                    if msg["msg"].lower() == "stop":
-                        print("Stoppet server")
-                        self.sock.close()
-                        break
-
-                    conn.sendall(json.dumps(msg).encode("utf-8"))
-                except Exception as e:
-                    print(e)
-                    break
-
-        conn.close()
-        print(f"{addr} stoppet")
-        del self.connectedClients[threading.current_thread().ident]
-        print(self.connectedClients)
+        self.rooms = {}
 
     def run(self):
         self.sock.bind((self.host, self.port))
@@ -45,10 +23,26 @@ class Server:
             # try:
             conn, addr = self.sock.accept()
             print("Got connection from: ", addr)
-            newCon = threading.Thread(target=self.newClient, args=(conn, addr))
+
+            key = conn.recv(1024)
+
+            username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
+
+            roomId = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
+            print(str(addr) + "Valgte rom id: " + str(roomId))
+
+            print(self.rooms)
+
+            if roomId in self.rooms:
+                room = self.rooms[roomId]
+            else:
+                room = Room()
+                self.rooms[room.roomId] = room
+                print("Fant ikke rom, ny id: " + str(room.roomId))
+
+            newCon = threading.Thread(
+                target=serverConnection, args=(conn, addr, key, room, username))
             newCon.start()
-            self.connectedClients[newCon.ident] = newCon
-            print(self.connectedClients)
 
             # except Exception as e:
             #     print("Connection error:")

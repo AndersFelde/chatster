@@ -1,17 +1,7 @@
 from client import Client
 from time import sleep
 
-clients = []
-for _ in range(10):
-    c = Client()
-    c.connect()
-    c.sendMsg()
-    clients.append(c)
-    sleep(2)
+c = Client()
+c.connect()
 
-sleep(10)
-
-for client in clients:
-    client.disconnect()
-
-    
+c.sendMsg()
