@@ -33,8 +33,10 @@ class Server:
         try:
             key = conn.recv(1024)
             print("fikk key")
+            print(key)
             username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
             print("fikk username")
+            print(username)
 
             roomId = int(Encryption().decryptMsg(conn.recv(1024), key)["msg"])
             print("fikk roomid")

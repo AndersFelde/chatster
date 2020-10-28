@@ -89,7 +89,7 @@ class Gui():
         if hasattr(self.client, "thread"):
             print("dropper connection")
             self.client.disconnect()
-        sys.exit() 
+        sys.exit()
 
     @property
     def lastRow(self):
