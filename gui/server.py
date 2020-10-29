@@ -30,39 +30,41 @@ class Server:
         self.sock.close()
 
     def handleConnection(self, conn, addr):
-        try:
-            key = conn.recv(1024)
-            print("fikk key")
-            print(key)
-            username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
-            print("fikk username")
-            print(username)
+        print("startet handler")
+        key = conn.recv(1024)
+        print("fikk key")
+        print(key)
+        username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
+        print("fikk username")
+        print(username)
 
-            roomId = int(Encryption().decryptMsg(conn.recv(1024), key)["msg"])
-            print("fikk roomid")
-            print(roomId)
-            print(self.rooms)
+        roomId = int(Encryption().decryptMsg(conn.recv(1024), key)["msg"])
+        print("fikk roomid")
+        print(roomId)
+        print(self.rooms)
 
-            if roomId == 0:
-                room = Room(self)
-                roomId = room.roomId
-                self.rooms[roomId] = room
-                print("lagde rom")
-            elif roomId not in self.rooms:
-                print("finner ikke rom")
-                conn.sendall(Encryption().encryptMsg(False, key))
-                print("sendte false")
-                return
-
-            room = self.rooms[roomId]
-
-            newCon = threading.Thread(
-                target=serverConnection, args=(conn, addr, key, room, username))
-            newCon.start()
-        except Exception as e:
-            print(e)
-            print("Det skjedde en feil, klient forlot mest sannsynlig")
+        if roomId == 0:
+            room = Room(self)
+            roomId = room.roomId
+            self.rooms[roomId] = room
+            print("lagde rom")
+        elif roomId not in self.rooms:
+            print("finner ikke rom")
+            conn.sendall(Encryption().encryptMsg(False, key))
+            print("sendte false")
+            conn.close()
             return
+
+        print("jeg vil dø")
+        room = self.rooms[roomId]
+
+        newCon = threading.Thread(
+            target=serverConnection, args=(conn, addr, key, room, username))
+        newCon.start()
+        # except Exception as e:
+        #     print(e)
+        #     print("Det skjedde en feil, klient forlot mest sannsynlig")
+        #     return
 
     def delRoom(self, roomId):
         if roomId in self.rooms:

@@ -10,17 +10,20 @@ class Client():
     def __init__(self, gui):
         self.gui = gui
 
-    def connect(self, username="joe", roomId="12345", host="127.0.0.1", port="9001"):
+    def connect(self, username="joe", roomId="12346", host="127.0.0.1", port="9001"):
         self.host = host
         self.port = int(port)
         self.key = fernet.Fernet.generate_key()
+        print(self.key)
         self.username = username
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((self.host, self.port))
             self.connected = True
 
-            self.sock.sendall(self.key)
+            print(self.key)
+            self.sock.send(self.key)
+            print(self.key)
             print("sendte key")
 
             self.sock.sendall(Encryption().encryptMsg(self.username, self.key))
@@ -35,6 +38,7 @@ class Client():
             print(msg)
 
             if msg["msg"] == False:
+                self.disconnect()
                 return False
 
             self.clientId, self.roomId = msg["msg"]
@@ -48,6 +52,7 @@ class Client():
 
         except Exception as e:
             print(e)
+            self.disconnect()
             return False
 
     def sendMsg(self, msg="TEST"):
