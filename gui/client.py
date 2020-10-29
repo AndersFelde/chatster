@@ -10,49 +10,42 @@ class Client():
     def __init__(self, gui):
         self.gui = gui
 
-    def connect(self, username="joe", roomId="12346", host="127.0.0.1", port="9001"):
+    def connect(self, host="127.0.0.1", port="9001"):
         self.host = host
         self.port = int(port)
         self.key = fernet.Fernet.generate_key()
-        print(self.key)
-        self.username = username
-        try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.connect((self.host, self.port))
-            self.connected = True
 
-            print(self.key)
-            self.sock.send(self.key)
-            print(self.key)
-            print("sendte key")
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((self.host, self.port))
+        self.connected = True
 
-            self.sock.sendall(Encryption().encryptMsg(self.username, self.key))
-            print("sendte username")
+        self.sock.send(self.key)
 
-            self.sock.sendall(Encryption().encryptMsg(roomId, self.key))
-            print(roomId)
-            print("sendte roomId")
+    def joinRoom(self, username="joe", roomId="12346"):
+        if self.connected:
+            self.username = username
+            try:
 
-            msg = self.sock.recv(1024)
-            msg = Encryption().decryptMsg(msg, self.key)
-            print(msg)
+                self.sock.sendall(Encryption().encryptMsg(
+                    self.username, self.key))
 
-            if msg["msg"] == False:
-                self.disconnect()
+                self.sock.sendall(Encryption().encryptMsg(roomId, self.key))
+
+                msg = self.sock.recv(1024)
+                msg = Encryption().decryptMsg(msg, self.key)
+
+                if msg["msg"] == False:
+                    return False
+
+                self.clientId, self.roomId = msg["msg"]
+
+                return True
+
+            except Exception as e:
+                print(e)
                 return False
-
-            self.clientId, self.roomId = msg["msg"]
-
-            self.thread = threading.Thread(target=self.listen)
-            self.thread.start()
-            print("Started listening")
-            print(self.username, self.roomId, self.clientId)
-
-            return True
-
-        except Exception as e:
-            print(e)
-            self.disconnect()
+        else:
+            print("Not connected")
             return False
 
     def sendMsg(self, msg="TEST"):
@@ -65,8 +58,13 @@ class Client():
             print(e)
             print("Feil med å sende melding")
 
+    def startListener(self):
+        self.thread = threading.Thread(target=self.listen)
+        self.thread.start()
+        print("Started listening")
+        print(self.username, self.roomId, self.clientId)
+
     def listen(self):
-        sleep(1)
         while True:
             msg = self.sock.recv(1024)
             try:
@@ -87,6 +85,7 @@ class Client():
 
     def disconnect(self):
         print("lukker sock")
+        self.connected = False
         self.sock.shutdown(socket.SHUT_RDWR)
         # self.sock.send(b"")
         # sender melding til listener

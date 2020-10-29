@@ -8,6 +8,8 @@ class Gui():
         self.root = Tk()
         self.root.title("Chatster")
         self.client = Client(self)
+        self.client.connect()
+
         self.lastRowInt = 0
 
         self.content = Frame(self.root)
@@ -43,11 +45,12 @@ class Gui():
         else:
             roomId = 0
 
-        connection = self.client.connect(username=username, roomId=roomId)
+        connection = self.client.joinRoom(username=username, roomId=roomId)
         print(connection)
         if connection != False:
             print("Fikk connection")
             self.renderChat()
+            self.client.startListener()
         else:
             self.errorText.set(f"Fant ikke rom med romId: {roomId}")
 

@@ -30,32 +30,24 @@ class Server:
         self.sock.close()
 
     def handleConnection(self, conn, addr):
-        print("startet handler")
         key = conn.recv(1024)
-        print("fikk key")
-        print(key)
-        username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
-        print("fikk username")
-        print(username)
 
-        roomId = int(Encryption().decryptMsg(conn.recv(1024), key)["msg"])
-        print("fikk roomid")
-        print(roomId)
-        print(self.rooms)
+        while True:
+            username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
 
-        if roomId == 0:
-            room = Room(self)
-            roomId = room.roomId
-            self.rooms[roomId] = room
-            print("lagde rom")
-        elif roomId not in self.rooms:
-            print("finner ikke rom")
-            conn.sendall(Encryption().encryptMsg(False, key))
-            print("sendte false")
-            conn.close()
-            return
+            roomId = int(Encryption().decryptMsg(conn.recv(1024), key)["msg"])
 
-        print("jeg vil dø")
+            if roomId == 0:
+                room = Room(self)
+                roomId = room.roomId
+                self.rooms[roomId] = room
+                break
+            elif roomId not in self.rooms:
+                conn.sendall(Encryption().encryptMsg(False, key))
+            else:
+                break
+                # conn.close()
+
         room = self.rooms[roomId]
 
         newCon = threading.Thread(
