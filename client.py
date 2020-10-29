@@ -7,7 +7,7 @@ from encryption import Encryption
 
 class Client():
 
-    def connect(self, host="127.0.0.1", port="9001"):
+    def connect(self, username="joe", roomId="12345", host="127.0.0.1", port="9001"):
         self.host = host
         self.port = int(port)
         self.key = fernet.Fernet.generate_key()
@@ -21,13 +21,15 @@ class Client():
             self.username = str(input("Username: "))
             self.sock.sendall(Encryption().encryptMsg(self.username, self.key))
 
-            roomId = int(input("RoomId: "))
-            self.sock.sendall(Encryption().encryptMsg(roomId, self.key))
+            msg, roomId = self.__joinRoom()
 
-            msg = self.sock.recv(1024)
-            self.clientId, self.roomId = list(
-                Encryption().decryptMsg(msg, self.key)["msg"])
-            print(self.clientId, self.roomId)
+            while msg["msg"] == False:
+                print(f"Fant ikke rom med roomId {roomId}")
+                msg, roomId = self.__joinRoom()
+
+            self.clientId, self.roomId = msg["msg"]
+
+            print(f"Din klientId: {self.clientId}\nDin romId: {self.roomId}")
 
             self.thread = threading.Thread(target=self.listen)
             self.thread.start()
@@ -38,12 +40,9 @@ class Client():
     def sendMsg(self, msg="TEST"):
         try:
             msg = Encryption().encryptMsg(
-                msg, self.key, username=self.username, clientId=self.clientId)
+                msg, self.key)
             self.sock.sendall(msg)
 
-            # response = self.sock.recv(1024)
-            # response = Encryption().decryptMsg(response, self.key)
-            # print(response)
         except Exception as e:
             print(e)
             print("Feil med å sende melding")
@@ -59,6 +58,15 @@ class Client():
 
     def disconnect(self):
         self.sock.close()
+
+    def __joinRoom(self):
+        print("0 betyr nytt rom")
+        roomId = int(input("RoomId: "))
+        self.sock.sendall(Encryption().encryptMsg(roomId, self.key))
+
+        msg = self.sock.recv(1024)
+        msg = Encryption().decryptMsg(msg, self.key)
+        return msg, roomId
 
 
 if __name__ == "__main__":

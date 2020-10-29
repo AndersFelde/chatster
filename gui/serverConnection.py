@@ -21,6 +21,8 @@ class serverConnection():
             msg = self.conn.recv(1024)
 
             if len(msg) == 0:
+                self.room.removeClient(self.clientId)
+                self.room.newMsg(self.username + " left")
                 break
 
             if len(msg) > 0:
@@ -36,7 +38,6 @@ class serverConnection():
 
         self.conn.close()
         print(f"{str(self.adr)} stoppet")
-        self.room.removeClient(self.clientId)
 
     def sendMsg(self, msg, username=None, senderId=None):
         if username == None and senderId == None:
