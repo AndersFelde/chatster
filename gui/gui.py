@@ -17,8 +17,6 @@ class Gui():
 
         self.introGui()
 
-        Button(self.root, text="Quit", command=lambda: self.quit()).pack()
-
         self.root.mainloop()
 
     def introGui(self):
@@ -38,12 +36,19 @@ class Gui():
         self.errorText = StringVar()
         Label(self.content, textvariable=self.errorText).grid(row=self.lastRow)
 
+        Button(self.content, text="Quit",
+               command=lambda: self.quit()).grid(row=self.lastRow)
+
     def joinRoom(self, new=False):
         username = self.usernameEntry.get()
         if not new:
             roomId = self.roomIdEntry.get()
         else:
             roomId = 0
+
+        if len(username) == 0 or len(str(roomId)) == 0:
+            self.errorText.set("Du må ha noe i begge felt da vettu")
+            return
 
         connection = self.client.joinRoom(username=username, roomId=roomId)
         print(connection)
@@ -55,9 +60,16 @@ class Gui():
             self.errorText.set(f"Fant ikke rom med romId: {roomId}")
 
     def renderChat(self):
+        self.content.destroy()
+
         self.root.title(str(self.client.roomId))
 
-        self.content.destroy()
+        self.header = Frame(self.root)
+        self.header.pack()
+
+        Label(self.header,
+              text=f"{self.client.roomId} - {self.client.username}").pack()
+
         self.content = Frame(self.root)
         self.content.pack()
 
@@ -77,6 +89,8 @@ class Gui():
         self.msgBtn = Button(self.inputFrame, text="Send",
                              command=self.sendMsg)
         self.msgBtn.grid(row=0, column=1)
+
+        Button(self.root, text="Quit", command=lambda: self.quit()).pack()
 
     def sendMsg(self):
         msg = self.msgString.get()

@@ -71,9 +71,7 @@ class Client():
                 msg = Encryption().decryptMsg(msg, self.key)
             except:
                 print("Stopped listener")
-                break
-
-            if msg["msg"] == "!suicide":
+                self.disconnect()
                 break
 
             if msg["clientId"] == self.clientId:
@@ -85,8 +83,9 @@ class Client():
 
     def disconnect(self):
         print("lukker sock")
-        self.connected = False
-        self.sock.shutdown(socket.SHUT_RDWR)
+        if self.connected:
+            self.connected = False
+            self.sock.shutdown(socket.SHUT_RDWR)
         # self.sock.send(b"")
         # sender melding til listener
         # self.sock.close()
