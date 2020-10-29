@@ -86,6 +86,8 @@ class Gui():
         self.msgInput = Entry(self.inputFrame, textvariable=self.msgString)
         self.msgInput.grid(row=0, column=0)
 
+        self.msgInput.bind('<Return>', lambda _: self.sendMsg())
+
         self.msgBtn = Button(self.inputFrame, text="Send",
                              command=self.sendMsg)
         self.msgBtn.grid(row=0, column=1)
