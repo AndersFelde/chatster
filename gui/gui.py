@@ -7,19 +7,22 @@ class Gui():
     def __init__(self):
         self.root = Tk()
         self.root.title("Chatster")
+
+        self.root.geometry("200x200")
+
         self.client = Client(self)
         self.client.connect()
 
         self.lastRowInt = 0
-
-        self.content = Frame(self.root)
-        self.content.pack()
 
         self.introGui()
 
         self.root.mainloop()
 
     def introGui(self):
+        self.content = Frame(self.root)
+        self.content.pack()
+
         Label(self.content, text="Username").grid(row=self.lastRow)
         self.usernameEntry = Entry(self.content)
         self.usernameEntry.grid(row=self.lastRow)

@@ -33,21 +33,27 @@ class Server:
         key = conn.recv(1024)
 
         while True:
-            username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
+            try:
+                username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
 
-            roomId = int(Encryption().decryptMsg(conn.recv(1024), key)["msg"])
+                roomId = int(Encryption().decryptMsg(
+                    conn.recv(1024), key)["msg"])
 
-            if roomId == 0:
-                room = Room(self)
-                roomId = room.roomId
-                self.rooms[roomId] = room
-                break
-            elif roomId not in self.rooms:
-                conn.sendall(Encryption().encryptMsg(False, key))
-            else:
-                break
+                if roomId == 0:
+                    room = Room(self)
+                    roomId = room.roomId
+                    self.rooms[roomId] = room
+                    break
+                elif roomId not in self.rooms:
+                    conn.sendall(Encryption().encryptMsg(False, key))
+                else:
+                    break
+            except:
+                print("Klient forlot")
+                return
                 # conn.close()
 
+        print("startet new con")
         room = self.rooms[roomId]
 
         newCon = threading.Thread(
