@@ -15,11 +15,16 @@ class Client():
         self.port = int(port)
         self.key = fernet.Fernet.generate_key()
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((self.host, self.port))
-        self.connected = True
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.connect((self.host, self.port))
+            self.connected = True
 
-        self.sock.send(self.key)
+            self.sock.send(self.key)
+        except:
+            self.connected = False
+            print(f"Could not connect to {self.host}:{self.port}")
+            print("Continuing, but this is now just a test")
 
     def joinRoom(self, username="joe", roomId="12346"):
         if self.connected:

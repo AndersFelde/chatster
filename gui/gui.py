@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter.ttk as ttk
 from client import Client
 import sys
 
@@ -8,7 +9,7 @@ class Gui():
         self.root = Tk()
         self.root.title("Chatster")
 
-        self.root.geometry("200x200")
+        self.root.geometry("400x400")
 
         self.client = Client(self)
         self.client.connect()
@@ -23,29 +24,50 @@ class Gui():
         self.content = Frame(self.root)
         self.content.pack()
 
-        Label(self.content, text="Username").grid(row=self.lastRow)
-        self.usernameEntry = Entry(self.content)
-        self.usernameEntry.grid(row=self.lastRow)
+        usernameFrame = Frame(self.content)
+        connectionFrame = Frame(self.content)
+        joinFrame = Frame(connectionFrame)
+        createFrame = Frame(connectionFrame)
+        sep = Label(connectionFrame, text="OR")
 
-        Label(self.content, text="RoomId").grid(row=self.lastRow)
-        self.roomIdEntry = Entry(self.content)
-        self.roomIdEntry.grid(row=self.lastRow)
+        usernameFrame.pack(side=TOP, pady=25)
+        connectionFrame.pack()
 
-        Button(self.content, text="Join",
-               command=self.joinRoom).grid(row=self.lastRow)
-        Button(self.content, text="Create room",
-               command=lambda: self.joinRoom(True)).grid(row=self.lastRow)
+        createFrame.pack(side=RIGHT, padx=20)
+        joinFrame.pack(side=LEFT, padx=20)
+        sep.pack(fill=Y, side=BOTTOM, pady=40)
+        sep.config(font=("Courier", 20))
+
+        ttk.Style().configure("pad.TEntry", padding="5 2 2 2")
+
+        Label(usernameFrame, text="Username").pack(pady=10)
+        self.usernameEntry = ttk.Entry(usernameFrame, style="pad.TEntry")
+        self.usernameEntry.pack()
+
+        Label(joinFrame, text="RoomId").pack()
+        self.roomIdEntry = ttk.Entry(joinFrame, style="pad.TEntry")
+        self.roomIdEntry.pack(pady=10)
+
+        Button(joinFrame, text="Join",
+               command=self.joinRoom).pack()
+
+        Button(createFrame, text="Create room",
+               command=lambda: self.joinRoom(True)).pack()
 
         self.errorText = StringVar()
-        Label(self.content, textvariable=self.errorText).grid(row=self.lastRow)
+        Label(self.content, textvariable=self.errorText).pack()
 
         Button(self.content, text="Quit",
-               command=lambda: self.quit()).grid(row=self.lastRow)
+               command=lambda: self.quit()).pack()
 
     def joinRoom(self, new=False):
         username = self.usernameEntry.get()
         if not new:
-            roomId = self.roomIdEntry.get()
+            try:
+                roomId = int(self.roomIdEntry.get())
+            except:
+                self.errorText.set("Skriv et tall du kanskje")
+                return
         else:
             roomId = 0
 
