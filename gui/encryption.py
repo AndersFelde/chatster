@@ -7,14 +7,15 @@ class Encryption():
     def gen_key(self):
         return fernet.Fernet.generate_key()
 
-    def encryptMsg(self, msg, key, username="Anonymous", senderId=None):
+    def encryptMsg(self, msg, key, username="Anonymous", senderId=None, color=None):
         encryptionType = fernet.Fernet(key)
 
         msg = {
             "msg": msg,
             "code": 1234,
             "username": username,
-            "clientId": senderId 
+            "clientId": senderId,
+            "color": color
         }
         msg = json.dumps(msg)
         msg = msg.encode("utf-8")
