@@ -30,31 +30,30 @@ class Server:
         self.sock.close()
 
     def handleConnection(self, conn, addr):
-        # try:
         key = conn.recv(1024)
-        print("fikk key")
-        print(key)
-        username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
-        print("fikk username")
-        print(username)
 
-        roomId = int(Encryption().decryptMsg(conn.recv(1024), key)["msg"])
-        print("fikk roomid")
-        print(roomId)
-        print(self.rooms)
+        while True:
+            try:
+                username = Encryption().decryptMsg(conn.recv(1024), key)["msg"]
 
-        if roomId == 0:
-            room = Room(self)
-            roomId = room.roomId
-            self.rooms[roomId] = room
-            print("lagde rom")
-        elif roomId not in self.rooms:
-            print("finner ikke rom")
-            conn.sendall(Encryption().encryptMsg(False, key))
-            print("sendte false")
-            conn.close()
-            return
+                roomId = int(Encryption().decryptMsg(
+                    conn.recv(1024), key)["msg"])
 
+                if roomId == 0:
+                    room = Room(self)
+                    roomId = room.roomId
+                    self.rooms[roomId] = room
+                    break
+                elif roomId not in self.rooms:
+                    conn.sendall(Encryption().encryptMsg(False, key))
+                else:
+                    break
+            except:
+                print("Klient forlot")
+                return
+                # conn.close()
+
+        print("startet new con")
         room = self.rooms[roomId]
 
         newCon = threading.Thread(
@@ -63,7 +62,6 @@ class Server:
         # except Exception as e:
         #     print(e)
         #     print("Det skjedde en feil, klient forlot mest sannsynlig")
-        #     conn.close()
         #     return
 
     def delRoom(self, roomId):
