@@ -1,6 +1,7 @@
 from tkinter import *
 import tkinter.ttk as ttk
 from client import Client
+from scrollableFrame import ScrollableFrame
 import sys
 
 
@@ -48,6 +49,8 @@ class Gui():
         self.roomIdEntry = ttk.Entry(joinFrame, style="pad.TEntry")
         self.roomIdEntry.pack(pady=10)
 
+        self.roomIdEntry.bind('<Return>', lambda _: self.joinRoom())
+
         Button(joinFrame, text="Join",
                command=self.joinRoom).pack()
 
@@ -90,43 +93,101 @@ class Gui():
         self.root.title(str(self.client.roomId))
 
         self.header = Frame(self.root)
-        self.header.pack()
+        self.header.grid(row=0)
 
         Label(self.header,
               text=f"{self.client.roomId} - {self.client.username}").pack()
 
-        self.content = Frame(self.root)
-        self.content.pack()
-
+        # self.content = Frame(self.root, bg="blue")
+        # self.content.grid(row=1, column=0, sticky="ew")
         self.lastRowInt = 0
 
-        self.chatFrame = Frame(self.content)
-        self.chatFrame.pack(side=TOP)
+        # self.chatContentFrame = Frame(self.root)
+        # self.chatContentFrame.grid(row=1, sticky="ew")
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
 
-        self.inputFrame = Frame(self.content)
-        self.inputFrame.pack(side=BOTTOM)
+        self.chatFrame = Frame(self.root, bg="blue")
+        self.chatFrame.grid(row=1, column=0, sticky="NEWS", padx=10, pady=10)
+
+        canvas = Canvas(self.chatFrame, bg="yellow")
+        scrollbar = ttk.Scrollbar(
+            self.chatFrame, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = ttk.Frame(canvas)
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        
+        # ttk.Label(self.scrollable_frame, text="Sample scrolling label").pack()
+
+        print("Scrollable la til")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # self.scrollbar = Scrollbar(
+        #     self.root, orient="vertical", command=self.chatCanvas.yview)
+        # self.scrollbar.grid(row=1, column=1, sticky="ns")
+        # self.chatCanvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # self.root.bind(
+        #     "<Configure>",
+        #     lambda e: self.chatCanvas.configure(
+        #         scrollregion=self.chatCanvas.bbox("all")
+        #     )
+        # )
+
+        # self.chatFrame = Frame(self.chatCanvas)
+
+        # self.chatFrame.grid_columnconfigure(0, weight=1)
+
+        # self.chatCanvas.create_window(
+        #     (0, 0), window=self.chatFrame, anchor="nw", tags="frame")
+
+        # self.chatCanvas.bind("<Configure>", self.onCanvasConfigure)
+
+        # self.chatCanvas.config(scrollregion=self.chatCanvas.bbox("all"))
+
+        self.inputFrame = Frame(self.root)
+        self.inputFrame.grid(row=2, column=0)
 
         self.msgString = StringVar()
 
         self.msgInput = Entry(self.inputFrame, textvariable=self.msgString)
-        self.msgInput.grid(row=0, column=0)
+        self.msgInput.pack(side=LEFT)
 
         self.msgInput.bind('<Return>', lambda _: self.sendMsg())
 
         self.msgBtn = Button(self.inputFrame, text="Send",
                              command=self.sendMsg)
-        self.msgBtn.grid(row=0, column=1)
+        self.msgBtn.pack(side=RIGHT)
 
-        Button(self.root, text="Quit", command=lambda: self.quit()).pack()
+        Button(self.root, text="Quit", command=lambda: self.quit()).grid(row=3)
 
     def sendMsg(self):
         msg = self.msgString.get()
         self.client.sendMsg(msg)
         self.msgString.set("")
 
-    def newMsg(self, msg):
+    def newMsg(self, msg, client=False, color="#000000"):
+        if client:
+            sticky = "SE"
+        else:
+            sticky = "SW"
+
+        Label(self.scrollable_frame, text=msg, bg=color).grid(
+            row=self.lastRow, column=0, sticky=sticky, pady=5)
+        print("la til i scrollable")
+
         print(msg)
-        Label(self.chatFrame, text=msg).grid(row=self.lastRow)
 
     def quit(self):
         print("quit")
@@ -135,7 +196,7 @@ class Gui():
             self.client.disconnect()
         sys.exit()
 
-    @property
+    @ property
     def lastRow(self):
         self.lastRowInt += 1
         return self.lastRowInt

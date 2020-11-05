@@ -73,18 +73,21 @@ class Client():
         while True:
             msg = self.sock.recv(1024)
             try:
-                msg = Encryption().decryptMsg(msg, self.key)
+                msgArr = Encryption().decryptMsg(msg, self.key)
+                print(msgArr)
             except:
                 print("Stopped listener")
                 self.disconnect()
                 break
 
-            if msg["clientId"] == self.clientId:
-                msg = "You: " + str(msg["msg"])
+            if msgArr["clientId"] == self.clientId:
+                msg = "You: " + str(msgArr["msg"])
+                client = True
             else:
-                msg = msg["username"] + ": " + msg["msg"]
+                msg = msgArr["username"] + ": " + msgArr["msg"]
+                client = False
 
-            self.gui.newMsg(msg)
+            self.gui.newMsg(msg, client, color=msgArr["color"])
 
     def disconnect(self):
         print("lukker sock")
