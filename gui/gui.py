@@ -19,7 +19,9 @@ class Gui():
 
         self.introGui()
 
+        self.root.resizable(False, False)
         self.root.mainloop()
+
 
     def introGui(self):
         self.content = Frame(self.root)
@@ -107,31 +109,37 @@ class Gui():
         self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
 
-        self.chatFrame = Frame(self.root, bg="blue")
-        self.chatFrame.grid(row=1, column=0, sticky="NEWS", padx=10, pady=10)
+        self.chatFrame = ttk.Frame(self.root)
+        self.chatFrame.grid(row=1, column=0, sticky="NEWS", padx=0, pady=10)
 
-        canvas = Canvas(self.chatFrame, bg="yellow")
+        self.canvas = Canvas(self.chatFrame)
         scrollbar = ttk.Scrollbar(
-            self.chatFrame, orient="vertical", command=canvas.yview)
-        self.scrollable_frame = ttk.Frame(canvas)
+            self.chatFrame, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = ttk.Frame(self.canvas)
 
         self.scrollable_frame.bind(
             "<Configure>",
-            lambda e: canvas.configure(
-                scrollregion=canvas.bbox("all")
+            lambda e: self.canvas.configure(
+                scrollregion=self.canvas.bbox("all")
             )
         )
 
-        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        
+        self.scrollable_frame.grid_columnconfigure(0, weight=1)
+
         # ttk.Label(self.scrollable_frame, text="Sample scrolling label").pack()
 
         print("Scrollable la til")
 
-        canvas.configure(yscrollcommand=scrollbar.set)
+        self.canvas.configure(yscrollcommand=scrollbar.set)
 
-        canvas.pack(side="left", fill="both", expand=True)
+        self.canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+
+        self.root.update()
+
+        self.canvas.create_window(
+            (0, 0), window=self.scrollable_frame, width=self.canvas.winfo_width())
+        print(self.canvas.winfo_width())
 
         # self.scrollbar = Scrollbar(
         #     self.root, orient="vertical", command=self.chatCanvas.yview)
@@ -185,8 +193,8 @@ class Gui():
 
         Label(self.scrollable_frame, text=msg, bg=color).grid(
             row=self.lastRow, column=0, sticky=sticky, pady=5)
-        print("la til i scrollable")
 
+        self.canvas.yview_moveto(1)
         print(msg)
 
     def quit(self):
