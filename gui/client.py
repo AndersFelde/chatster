@@ -81,7 +81,7 @@ class Client():
                 break
 
             if msgArr["clientId"] == self.clientId:
-                msg = "You: " + str(msgArr["msg"])
+                msg = str(msgArr["msg"])
                 client = True
             else:
                 msg = msgArr["username"] + ": " + msgArr["msg"]

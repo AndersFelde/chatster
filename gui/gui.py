@@ -22,7 +22,6 @@ class Gui():
         self.root.resizable(False, False)
         self.root.mainloop()
 
-
     def introGui(self):
         self.content = Frame(self.root)
         self.content.pack()
@@ -192,9 +191,10 @@ class Gui():
             sticky = "SW"
 
         Label(self.scrollable_frame, text=msg, bg=color).grid(
-            row=self.lastRow, column=0, sticky=sticky, pady=5)
+            row=self.lastRow, column=0, sticky=sticky, pady=5, padx=10)
 
-        self.canvas.yview_moveto(1)
+        self.canvas.update_idletasks()
+        self.canvas.yview_moveto("1.0")
         print(msg)
 
     def quit(self):
