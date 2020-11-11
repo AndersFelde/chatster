@@ -1,7 +1,6 @@
 from tkinter import *
 import tkinter.ttk as ttk
 from client import Client
-from scrollableFrame import ScrollableFrame
 import sys
 
 
