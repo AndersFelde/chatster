@@ -190,7 +190,7 @@ class Gui():
         else:
             sticky = "SW"
 
-        Label(self.scrollable_frame, text=msg, bg=color).grid(
+        Label(self.scrollable_frame, text=msg, bg=color, wraplength=300, justify=LEFT).grid(
             row=self.lastRow, column=0, sticky=sticky, pady=5, padx=10)
 
         self.canvas.update_idletasks()
